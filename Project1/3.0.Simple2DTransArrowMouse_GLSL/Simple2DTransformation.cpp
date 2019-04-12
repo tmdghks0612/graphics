@@ -19,6 +19,8 @@ glm::mat4 ViewMatrix, ProjectionMatrix, ViewProjectionMatrix;
 
 #define LOC_VERTEX 0
 
+#define PAWNSPEED 0.25f
+#define UPDATERATE 1
 int win_width = 0, win_height = 0; 
 float centerx = 0.0f, centery = 0.0f, rotate_angle = 0.0f;
 
@@ -201,6 +203,7 @@ void draw_airplane() { // Draw airplane in its MC.
 	glBindVertexArray(0);
 }
 
+
 void display(void) {
 	int i;
 	float x, r, s, delx, delr, dels;
@@ -214,6 +217,8 @@ void display(void) {
 	draw_axes();
  	draw_line();
 	draw_airplane();
+
+	
 	
 	/*
 	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(centerx, centery, 0.0f));
@@ -260,12 +265,20 @@ void display(void) {
 	draw_airplane();
 	
 	//my airplane
-	
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(centerx, centery, 0.0f));
+	/*ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-centerx, -centery, 0.0f));
+	ModelMatrix = glm::rotate(glm::mat4(1.0f), rotate_angle*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix = glm::rotate(ModelMatrix, rotate_angle*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_height / 2.0f, 0.0f, 0.0f));
+	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(centerx, centery, 0.0f));*/
+	//ver1
+
+	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(centerx,centery, 0.0f));
+	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_height / 2.0f, 0.0f, 0.0f));
 	ModelMatrix = glm::rotate(ModelMatrix, rotate_angle, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_airplane(); // mouse
+	
 
 	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, win_width / 4.0f, 0.0f));
 	ModelMatrix = glm::rotate(ModelMatrix, -90.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -285,6 +298,7 @@ void display(void) {
 			glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 			draw_airplane();  // 4
 	}
+
 	glFlush();	
 }   
 
@@ -297,15 +311,16 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 void special(int key, int x, int y) {
-#define SENSITIVITY 0.75
+#define SENSITIVITY 2.0f
+	
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		rotate_angle += SENSITIVITY*TO_RADIAN;
-		glutPostRedisplay();
+		rotate_angle += (SENSITIVITY * TO_RADIAN);
+		//glutPostRedisplay();
 		break;
 	case GLUT_KEY_RIGHT:
-		rotate_angle -= SENSITIVITY*TO_RADIAN;
-		glutPostRedisplay();
+		rotate_angle -= (SENSITIVITY * TO_RADIAN);
+		//glutPostRedisplay();
 		break;
 	/*case GLUT_KEY_DOWN:
 		centery -= SENSITIVITY;
@@ -326,15 +341,18 @@ void mouse(int button, int state, int x, int y) {
 		leftbuttonpressed = 0;
 }
 
+
+
+
 void motion(int x, int y) {
 	static int delay = 0;
 	static float tmpx = 0.0, tmpy = 0.0;
-	float dx, dy;
-	if (leftbuttonpressed) {
+	//float dx, dy;
+	/*if (leftbuttonpressed) {
 		centerx =  x - win_width/2.0f, centery = (win_height - y) - win_height/2.0f;
 		if (delay == 8) {	
-			dx = centerx - rotate_angle*tmpx;//modified
-			dy = centery - rotate_angle*tmpy;
+			dx = centerx - cos(rotate_angle)*tmpx;//modified
+			dy = centery - sin(rotate_angle)*tmpy;
 	  
 			if (dx > 0.0) {
 				rotate_angle = atan(dy / dx) + 90.0f*TO_RADIAN;
@@ -349,14 +367,30 @@ void motion(int x, int y) {
 			tmpx = centerx, tmpy = centery; 
 			delay = 0;
 		}
-		glutPostRedisplay();
+		//glutPostRedisplay();
 		delay++;
-	}
+	}*/
 } 
-	
+
+void tick(int)
+{
+	centerx += sin(rotate_angle)*PAWNSPEED;//modified
+	centery -= cos(rotate_angle)*PAWNSPEED;
+	glutPostRedisplay();
+
+	if (centerx > 400 || centery < -460 || centerx < -1475 || centery > 510)
+	//touch the wall then end the game
+	{
+		glutLeaveMainLoop();
+	}
+
+
+	glutTimerFunc(UPDATERATE, tick, 0);
+}
+
 void reshape(int width, int height) {
 	win_width = width, win_height = height;
-	
+
   	glViewport(0, 0, win_width, win_height);
 	ProjectionMatrix = glm::ortho(-win_width / 2.0, win_width / 2.0, 
 		-win_height / 2.0, win_height / 2.0, -1000.0, 1000.0);
@@ -387,6 +421,7 @@ void register_callbacks(void) {
 	glutMotionFunc(motion);
 	glutReshapeFunc(reshape);
 	glutCloseFunc(cleanup);
+	glutTimerFunc(UPDATERATE, tick, 0);
 }
 
 void prepare_shader_program(void) {
@@ -464,7 +499,7 @@ void main(int argc, char *argv[]) {
 
 	glutInit (&argc, argv);
  	glutInitDisplayMode(GLUT_RGBA | GLUT_MULTISAMPLE);
-	glutInitWindowSize (1200*0.95, 800*0.95);
+	glutInitWindowSize (2560*0.95, 1440*0.95);
 	glutInitContextVersion(4, 0);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutCreateWindow(program_name);
@@ -474,6 +509,7 @@ void main(int argc, char *argv[]) {
 
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	glutMainLoop ();
+	glutTimerFunc(UPDATERATE, tick, 0);
 }
 
 
