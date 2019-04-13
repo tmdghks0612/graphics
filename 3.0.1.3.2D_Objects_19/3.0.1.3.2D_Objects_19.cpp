@@ -7,8 +7,8 @@
 GLuint h_ShaderProgram; // handle to shader program
 GLint loc_ModelViewProjectionMatrix, loc_primitive_color; // indices of uniform variables
 
-// include glm/*.hpp only if necessary
-//#include <glm/glm.hpp> 
+														  // include glm/*.hpp only if necessary
+														  //#include <glm/glm.hpp> 
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, ortho, etc.
 glm::mat4 ModelViewProjectionMatrix;
 glm::mat4 ViewMatrix, ProjectionMatrix, ViewProjectionMatrix;
@@ -19,9 +19,7 @@ glm::mat4 ViewMatrix, ProjectionMatrix, ViewProjectionMatrix;
 
 #define LOC_VERTEX 0
 
-#define PAWNSPEED 0.0f
-#define UPDATERATE 1
-int win_width = 0, win_height = 0; 
+int win_width = 0, win_height = 0;
 float centerx = 0.0f, centery = 0.0f, rotate_angle = 0.0f;
 
 GLfloat axes[4][2];
@@ -53,9 +51,9 @@ void prepare_axes(void) { // Draw axes in their MC.
 }
 
 void update_axes(void) {
-	axes[0][0] = -win_width / 2.5f; axes[1][0] = win_width / 2.5f; 
-	axes[2][1] = -win_height / 2.5f;
-	axes[3][1] = win_height / 2.5f;
+	axes[0][0] = -win_width / 2.25f; axes[1][0] = win_width / 2.25f;
+	axes[2][1] = -win_height / 2.25f;
+	axes[3][1] = win_height / 2.25f;
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_axes);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(axes), axes, GL_STATIC_DRAW);
@@ -74,9 +72,9 @@ GLfloat line_color[3] = { 1.0f, 0.0f, 0.0f };
 GLuint VBO_line, VAO_line;
 
 void prepare_line(void) { 	// y = x - win_height/4
-	line[0][0] = (1.0f / 4.0f - 1.0f / 2.5f)*win_height; 
+	line[0][0] = (1.0f / 4.0f - 1.0f / 2.5f)*win_height;
 	line[0][1] = (1.0f / 4.0f - 1.0f / 2.5f)*win_height - win_height / 4.0f;
-	line[1][0] = win_width / 2.5f; 
+	line[1][0] = win_width / 2.5f;
 	line[1][1] = win_width / 2.5f - win_height / 4.0f;
 
 	// Initialize vertex buffer object.
@@ -98,9 +96,9 @@ void prepare_line(void) { 	// y = x - win_height/4
 }
 
 void update_line(void) { 	// y = x - win_height/4
-	line[0][0] = (1.0f / 4.0f - 1.0f / 2.5f)*win_height; 
+	line[0][0] = (1.0f / 4.0f - 1.0f / 2.5f)*win_height;
 	line[0][1] = (1.0f / 4.0f - 1.0f / 2.5f)*win_height - win_height / 4.0f;
-	line[1][0] = win_width / 2.5f; 
+	line[1][0] = win_width / 2.5f;
 	line[1][1] = win_width / 2.5f - win_height / 4.0f;
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_line);
@@ -109,7 +107,7 @@ void update_line(void) { 	// y = x - win_height/4
 }
 
 void draw_line(void) { // Draw line in its MC.
-	// y = x - win_height/4
+					   // y = x - win_height/4
 	glUniform3fv(loc_primitive_color, 1, line_color);
 	glBindVertexArray(VAO_line);
 	glDrawArrays(GL_LINES, 0, 2);
@@ -123,12 +121,12 @@ void draw_line(void) { // Draw line in its MC.
 #define AIRPLANE_SIDEWINDER1 4
 #define AIRPLANE_SIDEWINDER2 5
 #define AIRPLANE_CENTER 6
-GLfloat big_wing[6][2] = { { 0.0, 0.0 }, { -20.0, 15.0 }, { -20.0, 20.0 }, { 0.0, 23.0 }, { 20.0, 20.0 }, { 20.0, 15.0 } };
-GLfloat small_wing[6][2] = { { 0.0, -18.0 }, { -11.0, -12.0 }, { -12.0, -7.0 }, { 0.0, -10.0 }, { 12.0, -7.0 }, { 11.0, -12.0 } };
-GLfloat body[5][2] = { { 0.0, -25.0 }, { -6.0, 0.0 }, { -6.0, 22.0 }, { 6.0, 22.0 }, { 6.0, 0.0 } };
-GLfloat back[5][2] = { { 0.0, 25.0 }, { -7.0, 24.0 }, { -7.0, 21.0 }, { 7.0, 21.0 }, { 7.0, 24.0 } };
-GLfloat sidewinder1[5][2] = { { -20.0, 10.0 }, { -18.0, 3.0 }, { -16.0, 10.0 }, { -18.0, 20.0 }, { -20.0, 20.0 } };
-GLfloat sidewinder2[5][2] = { { 20.0, 10.0 }, { 18.0, 3.0 }, { 16.0, 10.0 }, { 18.0, 20.0 }, { 20.0, 20.0 } };
+GLfloat big_wing[6][2] = { { 0.0, 0.0 },{ -20.0, 15.0 },{ -20.0, 20.0 },{ 0.0, 23.0 },{ 20.0, 20.0 },{ 20.0, 15.0 } };
+GLfloat small_wing[6][2] = { { 0.0, -18.0 },{ -11.0, -12.0 },{ -12.0, -7.0 },{ 0.0, -10.0 },{ 12.0, -7.0 },{ 11.0, -12.0 } };
+GLfloat body[5][2] = { { 0.0, -25.0 },{ -6.0, 0.0 },{ -6.0, 22.0 },{ 6.0, 22.0 },{ 6.0, 0.0 } };
+GLfloat back[5][2] = { { 0.0, 25.0 },{ -7.0, 24.0 },{ -7.0, 21.0 },{ 7.0, 21.0 },{ 7.0, 24.0 } };
+GLfloat sidewinder1[5][2] = { { -20.0, 10.0 },{ -18.0, 3.0 },{ -16.0, 10.0 },{ -18.0, 20.0 },{ -20.0, 20.0 } };
+GLfloat sidewinder2[5][2] = { { 20.0, 10.0 },{ 18.0, 3.0 },{ 16.0, 10.0 },{ 18.0, 20.0 },{ 20.0, 20.0 } };
 GLfloat center[1][2] = { { 0.0, 0.0 } };
 GLfloat airplane_color[7][3] = {
 	{ 150 / 255.0f, 129 / 255.0f, 183 / 255.0f },  // big_wing
@@ -142,9 +140,12 @@ GLfloat airplane_color[7][3] = {
 
 GLuint VBO_airplane, VAO_airplane;
 
+int airplane_clock = 0;
+float airplane_s_factor = 1.0f;
+
 void prepare_airplane() {
-	GLsizeiptr buffer_size = sizeof(big_wing)+sizeof(small_wing)+sizeof(body)+sizeof(back)
-		+sizeof(sidewinder1)+sizeof(sidewinder2)+sizeof(center);
+	GLsizeiptr buffer_size = sizeof(big_wing) + sizeof(small_wing) + sizeof(body) + sizeof(back)
+		+ sizeof(sidewinder1) + sizeof(sidewinder2) + sizeof(center);
 
 	// Initialize vertex buffer object.
 	glGenBuffers(1, &VBO_airplane);
@@ -154,14 +155,14 @@ void prepare_airplane() {
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(big_wing), big_wing);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing), sizeof(small_wing), small_wing);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing)+sizeof(small_wing), sizeof(body), body);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing)+sizeof(small_wing)+sizeof(body), sizeof(back), back);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing)+sizeof(small_wing)+sizeof(body)+sizeof(back),
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing) + sizeof(small_wing), sizeof(body), body);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing) + sizeof(small_wing) + sizeof(body), sizeof(back), back);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing) + sizeof(small_wing) + sizeof(body) + sizeof(back),
 		sizeof(sidewinder1), sidewinder1);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing)+sizeof(small_wing)+sizeof(body)+sizeof(back)
-		+sizeof(sidewinder1), sizeof(sidewinder2), sidewinder2);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing)+sizeof(small_wing)+sizeof(body)+sizeof(back)
-		+sizeof(sidewinder1)+sizeof(sidewinder2), sizeof(center), center);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing) + sizeof(small_wing) + sizeof(body) + sizeof(back)
+		+ sizeof(sidewinder1), sizeof(sidewinder2), sidewinder2);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(big_wing) + sizeof(small_wing) + sizeof(body) + sizeof(back)
+		+ sizeof(sidewinder1) + sizeof(sidewinder2), sizeof(center), center);
 
 	// Initialize vertex array object.
 	glGenVertexArrays(1, &VAO_airplane);
@@ -202,66 +203,6 @@ void draw_airplane() { // Draw airplane in its MC.
 	glPointSize(1.0);
 	glBindVertexArray(0);
 }
-//self-made objects
-#define ALIEN_BODY 0
-#define ALIEN_RIGHTHAT 1
-#define ALIEN_LEFTHAT 2
-GLfloat alien_head[6][2] = { {0.0,0.0}, {-5.0, -1.0}, { -4.0, -4.0 },{ -0.0, -3.5 } ,{4.0,-4.0}, {5.0,-1.0}};
-GLfloat alien_lefthat[4][2] = { { -5.0, -1.0 },{ -9.0, 4.0 },{ -3.0, 0.0 },{ 0.0, 4.0 }};
-GLfloat alien_righthat[4][2] = { {0.0,4.0}, {3.0,0.0},{ 9.0, 4.0 },{5.0,-1.0} };//,{3.0,0.0} ,{0.0,4.0}, {0.0,0.0}};
-
-GLfloat alien_color[9][3] = {
-	{ 183 / 255.0f, 110 / 255.0f, 121 / 255.0f },
-	{ 255 / 255.0f, 255 / 255.0f, 255 / 255.0f },
-	{ 0 / 255.0f, 0 / 255.0f, 0 / 255.0f },
-	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
-	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
-	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
-	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
-	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
-	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f }
-};
-
-GLuint VBO_alien, VAO_alien;
-void prepare_alien() {
-	GLsizeiptr buffer_size = sizeof(alien_head) + sizeof(alien_lefthat) + sizeof(alien_righthat);
-
-	// Initialize vertex buffer object.
-	glGenBuffers(1, &VBO_alien);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_alien);
-	glBufferData(GL_ARRAY_BUFFER, buffer_size, NULL, GL_STATIC_DRAW); // allocate buffer object memory
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(alien_head), alien_head);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(alien_head), sizeof(alien_lefthat), alien_lefthat);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(alien_head)+ sizeof(alien_righthat), sizeof(alien_righthat), alien_righthat);
-
-	glGenVertexArrays(1, &VAO_alien);
-	glBindVertexArray(VAO_alien);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_alien);
-	glVertexAttribPointer(LOC_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-}
-
-void draw_alien() {
-	glBindVertexArray(VAO_alien);
-
-	glUniform3fv(loc_primitive_color, 1, alien_color[ALIEN_BODY]);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
-
-	glUniform3fv(loc_primitive_color, 1, alien_color[ALIEN_RIGHTHAT]);
-	glDrawArrays(GL_TRIANGLE_FAN, 6, 6);
-
-	glUniform3fv(loc_primitive_color, 1, alien_color[ALIEN_LEFTHAT]);
-	glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
-
-	glBindVertexArray(0);
-}
-
 
 //shirt
 #define SHIRT_LEFT_BODY 0
@@ -914,67 +855,21 @@ void display(void) {
 	glm::mat4 ModelMatrix;
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	
+
 	ModelMatrix = glm::mat4(1.0f);
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_axes();
- 	draw_line();
-	draw_airplane();
-	draw_sword();
 
-	
-	
-	/*
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(centerx, centery, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, rotate_angle, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
- 	draw_airplane(); // 0
-	
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-win_width / 4.0f, -win_height / 4.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 90.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(3.0f, 3.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();  // 1
-	
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_width / 2.5f, -win_height / 8.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 270.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();  // 2
- 
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height / 4.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 45.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(1.0f, -1.0f, 1.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, -45.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-win_height / 4.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_width / 2.5f, -win_height / 8.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-win_width / 2.5f, win_height / 8.0f, 0.0f));
- 
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_width / 2.5f, -win_height / 8.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 270.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();  // 3
-	*/
-
-	//@@@@@ Default Options@@@@@
-	
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height / 4.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 60.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-500.0f, 0.0f, 0.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_airplane();
 
-	//default object drawings
 	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-300.0f, 0.0f, 0.0f));
 	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	//draw_airplane();
 	draw_shirt();
 
 	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-100.0f, 0.0f, 0.0f));
@@ -1013,49 +908,14 @@ void display(void) {
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_cake();
 
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height/2.0f, -100.0f, 0.0f));
+	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(400.0f, -100.0f, 0.0f));
 	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(3.5f, 3.5f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_sword();
-	//end of default object drawings
 
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height / 2.0f, 300.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(3.5f, 3.5f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_alien();
-	//self_made_objects
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(centerx,centery, 0.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_height / 2.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, rotate_angle, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane(); // mouse
-	
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, win_width / 4.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, -90.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();
-	//plane1
-
-	delx = win_width/14.0f; delr = 15.0f; dels = 1.1f;
-	x = -delx; r = delr; s = dels;
-	for (i = 0; i < 5; i++, x -= delx, r += delr, s *= dels) {
-		ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x, 15.0f*sqrtf(-x), 0.0f));
-		ModelMatrix = glm::rotate(ModelMatrix, r*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-			glTranslatef(x, 15.0f*sqrtf(-x), 0.0f);
-			ModelMatrix = glm::scale(ModelMatrix, glm::vec3(s, s, 1.0f));
-			ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-			glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-			draw_airplane();  // 4
-	}
-
-	glFlush();	
-}   
+	glFlush();
+}
 
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
@@ -1065,90 +925,11 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 }
 
-void special(int key, int x, int y) {
-#define SENSITIVITY 2.0f
-	
-	switch (key) {
-	case GLUT_KEY_LEFT:
-		rotate_angle += (SENSITIVITY * TO_RADIAN);
-		//glutPostRedisplay();
-		break;
-	case GLUT_KEY_RIGHT:
-		rotate_angle -= (SENSITIVITY * TO_RADIAN);
-		//glutPostRedisplay();
-		break;
-	/*case GLUT_KEY_DOWN:
-		centery -= SENSITIVITY;
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_UP:
-		centery += SENSITIVITY;
-		glutPostRedisplay();
-		break;*/
-	}
-}
-
-int leftbuttonpressed = 0;
-void mouse(int button, int state, int x, int y) {
-	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
-		leftbuttonpressed = 1;
-	else if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP))
-		leftbuttonpressed = 0;
-}
-
-
-
-
-void motion(int x, int y) {
-	static int delay = 0;
-	static float tmpx = 0.0, tmpy = 0.0;
-	//float dx, dy;
-	/*if (leftbuttonpressed) {
-		centerx =  x - win_width/2.0f, centery = (win_height - y) - win_height/2.0f;
-		if (delay == 8) {	
-			dx = centerx - cos(rotate_angle)*tmpx;//modified
-			dy = centery - sin(rotate_angle)*tmpy;
-	  
-			if (dx > 0.0) {
-				rotate_angle = atan(dy / dx) + 90.0f*TO_RADIAN;
-			}
-			else if (dx < 0.0) {
-				rotate_angle = atan(dy / dx) - 90.0f*TO_RADIAN;
-			}
-			else if (dx == 0.0) {
-				if (dy > 0.0) rotate_angle = 180.0f*TO_RADIAN;
-				else  rotate_angle = 0.0f;
-			}
-			tmpx = centerx, tmpy = centery; 
-			delay = 0;
-		}
-		//glutPostRedisplay();
-		delay++;
-	}*/
-} 
-
-void tick(int)
-{
-	centerx += sin(rotate_angle)*PAWNSPEED;//modified
-	centery -= cos(rotate_angle)*PAWNSPEED;
-	
-	glutPostRedisplay();
-
-	if (centerx > 400 || centery < -460 || centerx < -1475 || centery > 510)
-	//touch the wall then end the game
-	{
-		glutLeaveMainLoop();
-	}
-
-
-	glutTimerFunc(UPDATERATE, tick, 0);
-}
-
 void reshape(int width, int height) {
 	win_width = width, win_height = height;
 
-  	glViewport(0, 0, win_width, win_height);
-	ProjectionMatrix = glm::ortho(-win_width / 2.0, win_width / 2.0, 
+	glViewport(0, 0, win_width, win_height);
+	ProjectionMatrix = glm::ortho(-win_width / 2.0, win_width / 2.0,
 		-win_height / 2.0, win_height / 2.0, -1000.0, 1000.0);
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
@@ -1167,17 +948,15 @@ void cleanup(void) {
 
 	glDeleteVertexArrays(1, &VAO_airplane);
 	glDeleteBuffers(1, &VBO_airplane);
+
+	// Delete others here too!!!
 }
 
 void register_callbacks(void) {
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
-	glutSpecialFunc(special);
-	glutMouseFunc(mouse);
-	glutMotionFunc(motion);
 	glutReshapeFunc(reshape);
 	glutCloseFunc(cleanup);
-	glutTimerFunc(UPDATERATE, tick, 0);
 }
 
 void prepare_shader_program(void) {
@@ -1195,10 +974,10 @@ void prepare_shader_program(void) {
 }
 
 void initialize_OpenGL(void) {
-	glEnable(GL_MULTISAMPLE); 
+	glEnable(GL_MULTISAMPLE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	
-	glClearColor(44 / 255.0f, 180 / 255.0f, 49 / 255.0f, 1.0f);
+
+	glClearColor(250 / 255.0f, 128 / 255.0f, 114 / 255.0f, 1.0f);
 	ViewMatrix = glm::mat4(1.0f);
 }
 
@@ -1214,12 +993,11 @@ void prepare_scene(void) {
 	prepare_hat();
 	prepare_cake();
 	prepare_sword();
-	prepare_alien();
 }
 
 void initialize_renderer(void) {
 	register_callbacks();
-	prepare_shader_program(); 
+	prepare_shader_program();
 	initialize_OpenGL();
 	prepare_scene();
 }
@@ -1229,8 +1007,8 @@ void initialize_glew(void) {
 
 	glewExperimental = GL_TRUE;
 
-    error = glewInit();
-	if (error != GLEW_OK) { 
+	error = glewInit();
+	if (error != GLEW_OK) {
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(error));
 		exit(-1);
 	}
@@ -1254,17 +1032,16 @@ void greetings(char *program_name, char messages[][256], int n_message_lines) {
 	initialize_glew();
 }
 
-#define N_MESSAGE_LINES 2
+#define N_MESSAGE_LINES 1
 void main(int argc, char *argv[]) {
-	char program_name[64] = "Sogang CSE4170 Simple2DTransformation_GLSL_3.0";
+	char program_name[64] = "Sogang CSE4170 2DObjects_GLSL_3.0.1.3";
 	char messages[N_MESSAGE_LINES][256] = {
-		"    - Keys used: 'ESC', four arrows",
-		"    - Mouse used: L-click and move"
+		"    - Keys used: 'ESC' "
 	};
 
-	glutInit (&argc, argv);
- 	glutInitDisplayMode(GLUT_RGBA | GLUT_MULTISAMPLE);
-	glutInitWindowSize (2560*0.95, 1440*0.95);
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_MULTISAMPLE);
+	glutInitWindowSize(1200, 300);
 	glutInitContextVersion(4, 0);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutCreateWindow(program_name);
@@ -1273,8 +1050,7 @@ void main(int argc, char *argv[]) {
 	initialize_renderer();
 
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
-	glutMainLoop ();
-	glutTimerFunc(UPDATERATE, tick, 0);
+	glutMainLoop();
 }
 
 
