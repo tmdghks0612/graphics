@@ -19,10 +19,28 @@ glm::mat4 ViewMatrix, ProjectionMatrix, ViewProjectionMatrix;
 
 #define LOC_VERTEX 0
 
-#define PAWNSPEED 0.0f
+#define ACC 0.001
+#define PAWNSPEED 0.3f
 #define UPDATERATE 1
+
+GLfloat carspeed[3] = { 0.2f , -0.2f, 0.2f};
+GLfloat carcoord[3] = { -300.0f, 400.0f, -200.0f };
+GLfloat carheight[3] = { 250.0f, 0.0f, -250.0f };
 int win_width = 0, win_height = 0; 
+bool startflag = false;
 float centerx = 0.0f, centery = 0.0f, rotate_angle = 0.0f;
+float boundary = 15.0f;
+
+GLfloat obstacle[8][2] = {
+	{-500.0f,100.0f},
+	{-200.0f,-400.0f},
+	{0.0f,150.0f},
+	{150.0f,0.0f},
+	{250.0f,300.0f},
+	{400.0f,-150.0f},
+	{-50.0f,-100.0f},
+	{-300.0f,0.0f}
+};
 
 GLfloat axes[4][2];
 GLfloat axes_color[3] = { 0.0f, 0.0f, 0.0f };
@@ -206,15 +224,16 @@ void draw_airplane() { // Draw airplane in its MC.
 #define ALIEN_BODY 0
 #define ALIEN_RIGHTHAT 1
 #define ALIEN_LEFTHAT 2
+#define ALIEN_EYE 3
 GLfloat alien_head[6][2] = { {0.0,0.0}, {-5.0, -1.0}, { -4.0, -4.0 },{ -0.0, -3.5 } ,{4.0,-4.0}, {5.0,-1.0}};
-GLfloat alien_lefthat[4][2] = { { -5.0, -1.0 },{ -9.0, 4.0 },{ -3.0, 0.0 },{ 0.0, 4.0 }};
-GLfloat alien_righthat[4][2] = { {0.0,4.0}, {3.0,0.0},{ 9.0, 4.0 },{5.0,-1.0} };//,{3.0,0.0} ,{0.0,4.0}, {0.0,0.0}};
-
+GLfloat alien_lefthat[5][2] = { { -5.0, -1.0 },{ -9.0, 4.0 },{ -3.0, 0.0 },{0.0,4.0},{ 0.0, 0.0 } };
+GLfloat alien_righthat[5][2] = { {0.0,0.0}, {0.0,4.0}, {3.0,0.0},{ 9.0, 4.0 },{5.0,-1.0} };//,{3.0,0.0} ,{0.0,4.0}, {0.0,0.0}};
+GLfloat alien_lefteye[3][2] = { {-1.0,-1.0},{-4.0,-2.0},{-3.5,-3.5} };
 GLfloat alien_color[9][3] = {
 	{ 183 / 255.0f, 110 / 255.0f, 121 / 255.0f },
 	{ 255 / 255.0f, 255 / 255.0f, 255 / 255.0f },
 	{ 0 / 255.0f, 0 / 255.0f, 0 / 255.0f },
-	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
+	{ 10 / 255.0f, 110 / 255.0f, 180 / 255.0f },
 	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
 	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
 	{ 206 / 255.0f, 173 / 255.0f, 184 / 255.0f },
@@ -234,7 +253,8 @@ void prepare_alien() {
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(alien_head), alien_head);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(alien_head), sizeof(alien_lefthat), alien_lefthat);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(alien_head)+ sizeof(alien_righthat), sizeof(alien_righthat), alien_righthat);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(alien_head)+ sizeof(alien_lefthat), sizeof(alien_righthat), alien_righthat);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(alien_head) + sizeof(alien_lefthat) + sizeof(alien_righthat), sizeof(alien_lefteye), alien_lefteye);
 
 	glGenVertexArrays(1, &VAO_alien);
 	glBindVertexArray(VAO_alien);
@@ -254,10 +274,13 @@ void draw_alien() {
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 
 	glUniform3fv(loc_primitive_color, 1, alien_color[ALIEN_RIGHTHAT]);
-	glDrawArrays(GL_TRIANGLE_FAN, 6, 6);
+	glDrawArrays(GL_TRIANGLE_FAN, 6, 5);
 
 	glUniform3fv(loc_primitive_color, 1, alien_color[ALIEN_LEFTHAT]);
-	glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
+	glDrawArrays(GL_TRIANGLE_FAN, 11, 5);
+
+	glUniform3fv(loc_primitive_color, 1, alien_color[ALIEN_EYE]);
+	glDrawArrays(GL_TRIANGLE_FAN, 16, 3);
 
 	glBindVertexArray(0);
 }
@@ -907,142 +930,139 @@ void draw_sword() {
 	glBindVertexArray(0);
 }
 
+int leftbuttonpressed = 0;
+void tick(int);
+void mouse(int button, int state, int x, int y) {
+	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+	{
+		startflag = 1;
+		leftbuttonpressed = 1;
+		glutTimerFunc(UPDATERATE, tick, 0);
+	}
+	else if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP))
+		leftbuttonpressed = 0;
+}
+
+void tick(int)
+{
+	int i = 0;
+	glutPostRedisplay();
+	if (startflag)
+	{
+		//sleep(UPDATERATE);
+		centerx += sin(rotate_angle)*PAWNSPEED;//modified
+		centery -= cos(rotate_angle)*PAWNSPEED;
+
+		
+		
+		if (centerx > (win_width / 2.0)*0.975 || centery > (win_height / 2.0)*0.95 || centerx < (-1 * (win_width / 2.0))*0.975 || centery < (-1 * (win_height / 2.0))*0.95)
+			//touch the wall then end the game
+		{
+			glutLeaveMainLoop();
+		}
+
+		for (i=0; i < 8; ++i)
+		{
+			if (((centerx < obstacle[i][0] + boundary) && (centerx > obstacle[i][0] - boundary)) && ((centery < obstacle[i][1] + boundary) && (centery > obstacle[i][1] - boundary)))
+			{
+				glutLeaveMainLoop();
+			}
+		}
+		for (i=0; i < 3; ++i)
+		{
+			if(carcoord[i] > 0.0f)
+			{
+				carspeed[i] -= ACC;
+			}
+			else
+			{
+				carspeed[i] += ACC;
+			}
+			
+			carcoord[i] += carspeed[i];
+			if (((centerx < carcoord[i] + boundary) && (centerx > carcoord[i] - boundary)) && ((centery < carheight[i] + boundary) && (centery > carheight[i] - boundary)))
+			{
+				glutLeaveMainLoop();
+			}
+		}
+	}
+
+	glutTimerFunc(UPDATERATE, tick, 0);
+	return;
+}
+
+
+
+/*void getmouse(int input)
+{
+	if (leftbuttonpressed && input==0)
+	{
+		//start game
+		startflag = true;
+		//glutTimerFunc(UPDATERATE, tick, 0);
+	}
+	else
+	{
+		while (!input)
+		{
+			glutTimerFunc(UPDATERATE, getmouse, 1);
+		}
+	}
+
+}*/
 
 void display(void) {
 	int i;
 	float x, r, s, delx, delr, dels;
 	glm::mat4 ModelMatrix;
 
+
 	glClear(GL_COLOR_BUFFER_BIT);
-	
-	ModelMatrix = glm::mat4(1.0f);
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_axes();
- 	draw_line();
-	draw_airplane();
-	draw_sword();
-
-	
-	
-	/*
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(centerx, centery, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, rotate_angle, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
- 	draw_airplane(); // 0
-	
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-win_width / 4.0f, -win_height / 4.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 90.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(3.0f, 3.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();  // 1
-	
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_width / 2.5f, -win_height / 8.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 270.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();  // 2
- 
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height / 4.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 45.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(1.0f, -1.0f, 1.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, -45.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-win_height / 4.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_width / 2.5f, -win_height / 8.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(-win_width / 2.5f, win_height / 8.0f, 0.0f));
- 
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_width / 2.5f, -win_height / 8.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, 270.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();  // 3
-	*/
-
 	//@@@@@ Default Options@@@@@
 	
 	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height / 4.0f, 0.0f, 0.0f));
 	ModelMatrix = glm::rotate(ModelMatrix, 60.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();
-
-	//default object drawings
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-300.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	//draw_airplane();
-	draw_shirt();
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-100.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_house();
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_car();
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(300.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_cocktail();
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(500.0f, 0.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_car2();
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -100.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_hat();
-
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-400.0f, -100.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(5.0f, 5.0f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_cake();
 
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height/2.0f, -100.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(3.5f, 3.5f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_sword();
-	//end of default object drawings
+	//default object drawings
 
-	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(win_height / 2.0f, 300.0f, 0.0f));
-	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(3.5f, 3.5f, 1.0f));
-	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
-	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_alien();
+	for (i = 0; i < 8; ++i)
+	{
+		ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(obstacle[i][0], obstacle[i][1], 0.0f));
+		ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		draw_house();
+	}
+	
 	//self_made_objects
 
 	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(centerx,centery, 0.0f));
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(win_height / 2.0f, 0.0f, 0.0f));
 	ModelMatrix = glm::rotate(ModelMatrix, rotate_angle, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(0.75f, 0.75f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_airplane(); // mouse
 	
 
 	ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, win_width / 4.0f, 0.0f));
-	ModelMatrix = glm::rotate(ModelMatrix, -90.0f*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix = glm::scale(ModelMatrix, glm::vec3(3.0f, 3.0f, 0.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
-	draw_airplane();
+	draw_alien();
 	//plane1
 
-	delx = win_width/14.0f; delr = 15.0f; dels = 1.1f;
+	for (i = 0; i < 3; ++i)
+	{
+		ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(carcoord[i], carheight[i], 0.0f));
+		ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
+		glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+		draw_car();
+	}
+	//cars image
+	
+	/*delx = win_width/14.0f; delr = 15.0f; dels = 1.1f;
 	x = -delx; r = delr; s = dels;
 	for (i = 0; i < 5; i++, x -= delx, r += delr, s *= dels) {
 		ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x, 15.0f*sqrtf(-x), 0.0f));
@@ -1052,7 +1072,7 @@ void display(void) {
 			ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix;
 			glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 			draw_airplane();  // 4
-	}
+	}*/
 
 	glFlush();	
 }   
@@ -1066,7 +1086,7 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 void special(int key, int x, int y) {
-#define SENSITIVITY 2.0f
+#define SENSITIVITY 15.0f
 	
 	switch (key) {
 	case GLUT_KEY_LEFT:
@@ -1076,8 +1096,7 @@ void special(int key, int x, int y) {
 	case GLUT_KEY_RIGHT:
 		rotate_angle -= (SENSITIVITY * TO_RADIAN);
 		//glutPostRedisplay();
-		break;
-	/*case GLUT_KEY_DOWN:
+		break;	/*case GLUT_KEY_DOWN:
 		centery -= SENSITIVITY;
 		glutPostRedisplay();
 		break;
@@ -1088,13 +1107,8 @@ void special(int key, int x, int y) {
 	}
 }
 
-int leftbuttonpressed = 0;
-void mouse(int button, int state, int x, int y) {
-	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
-		leftbuttonpressed = 1;
-	else if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP))
-		leftbuttonpressed = 0;
-}
+
+
 
 
 
@@ -1127,22 +1141,9 @@ void motion(int x, int y) {
 	}*/
 } 
 
-void tick(int)
-{
-	centerx += sin(rotate_angle)*PAWNSPEED;//modified
-	centery -= cos(rotate_angle)*PAWNSPEED;
-	
-	glutPostRedisplay();
-
-	if (centerx > 400 || centery < -460 || centerx < -1475 || centery > 510)
-	//touch the wall then end the game
-	{
-		glutLeaveMainLoop();
-	}
 
 
-	glutTimerFunc(UPDATERATE, tick, 0);
-}
+
 
 void reshape(int width, int height) {
 	win_width = width, win_height = height;
@@ -1155,7 +1156,10 @@ void reshape(int width, int height) {
 	update_axes();
 	update_line();
 
-	glutPostRedisplay();
+	if (startflag)
+	{
+		glutPostRedisplay();
+	}
 }
 
 void cleanup(void) {
@@ -1178,6 +1182,7 @@ void register_callbacks(void) {
 	glutReshapeFunc(reshape);
 	glutCloseFunc(cleanup);
 	glutTimerFunc(UPDATERATE, tick, 0);
+	//glutTimerFunc(UPDATERATE, getmouse, 0);
 }
 
 void prepare_shader_program(void) {
@@ -1254,6 +1259,8 @@ void greetings(char *program_name, char messages[][256], int n_message_lines) {
 	initialize_glew();
 }
 
+
+
 #define N_MESSAGE_LINES 2
 void main(int argc, char *argv[]) {
 	char program_name[64] = "Sogang CSE4170 Simple2DTransformation_GLSL_3.0";
@@ -1264,7 +1271,7 @@ void main(int argc, char *argv[]) {
 
 	glutInit (&argc, argv);
  	glutInitDisplayMode(GLUT_RGBA | GLUT_MULTISAMPLE);
-	glutInitWindowSize (2560*0.95, 1440*0.95);
+	glutInitWindowSize (1280, 720);
 	glutInitContextVersion(4, 0);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutCreateWindow(program_name);
@@ -1273,8 +1280,10 @@ void main(int argc, char *argv[]) {
 	initialize_renderer();
 
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+
+	//glutTimerFunc(UPDATERATE, getmouse, 0);
+	
 	glutMainLoop ();
-	glutTimerFunc(UPDATERATE, tick, 0);
 }
 
 
