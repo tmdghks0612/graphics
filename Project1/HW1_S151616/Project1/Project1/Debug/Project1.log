@@ -1,0 +1,6 @@
+﻿  Simple2DTransformation.cpp
+c:\users\dream\dropbox\sogang\graphics\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(855): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\dream\dropbox\sogang\graphics\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(856): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\dream\dropbox\sogang\graphics\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(858): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\dream\dropbox\sogang\graphics\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1276): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+  Project1.vcxproj -> C:\Users\dream\Dropbox\Sogang\Graphics\Project1\Debug\Project1.exe

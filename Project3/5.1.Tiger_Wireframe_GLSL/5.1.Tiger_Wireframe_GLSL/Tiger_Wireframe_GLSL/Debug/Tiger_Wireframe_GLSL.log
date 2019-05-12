@@ -1,0 +1,6 @@
+﻿  LoadShaders.cpp
+c:\users\choi\dropbox\sogang\graphics\3차\5.1.tiger_wireframe_glsl\5.1.tiger_wireframe_glsl\tiger_wireframe_glsl\shaders\loadshaders.cpp(11): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(208): note: 'fopen' 선언을 참조하십시오.
+  Tiger_Wireframe_GLSL.cpp
+  코드를 생성하고 있습니다...
+  Tiger_Wireframe_GLSL.vcxproj -> C:\Users\CHOI\Dropbox\Sogang\graphics\3차\5.1.Tiger_Wireframe_GLSL\5.1.Tiger_Wireframe_GLSL\Debug\Tiger_Wireframe_GLSL.exe

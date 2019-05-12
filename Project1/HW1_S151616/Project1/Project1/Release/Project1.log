@@ -1,0 +1,27 @@
+﻿  LoadShaders.cpp
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\shaders\loadshaders.cpp(11): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\stdio.h(208): note: 'fopen' 선언을 참조하십시오.
+  Simple2DTransformation.cpp
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(880): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(881): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(883): warning C4305: '초기화 중': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(976): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(995): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(999): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1014): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1021): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1043): warning C4305: '-=': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1047): warning C4305: '+=': 'double'에서 'GLfloat'(으)로 잘립니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1084): warning C4101: 'delx' :참조되지 않은 지역 변수입니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1084): warning C4101: 's' :참조되지 않은 지역 변수입니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1084): warning C4101: 'x' :참조되지 않은 지역 변수입니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1084): warning C4101: 'dels' :참조되지 않은 지역 변수입니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1084): warning C4101: 'r' :참조되지 않은 지역 변수입니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1084): warning C4101: 'delr' :참조되지 않은 지역 변수입니다.
+c:\users\choi\dropbox\sogang\graphics\1차\hw1_s151616\project1\3.0.simple2dtransarrowmouse_glsl\simple2dtransformation.cpp(1327): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+  코드를 생성하고 있습니다.
+  97 of 98 functions (99.0%) were compiled, the rest were copied from previous compilation.
+    4 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  Project1.vcxproj -> C:\Users\CHOI\Dropbox\Sogang\graphics\1차\HW1_S151616\Project1\Release\Project1.exe
