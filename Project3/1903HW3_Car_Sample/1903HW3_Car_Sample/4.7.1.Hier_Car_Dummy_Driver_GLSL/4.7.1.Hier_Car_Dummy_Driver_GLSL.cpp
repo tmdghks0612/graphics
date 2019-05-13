@@ -56,7 +56,7 @@ void draw_objects_in_world(void) {
 #define ww 1.0f
 #define N_SPIDER_FRAMES 16
 
-GLuint spider_VBO, spider_VAO;
+GLuint spider_VBO, spider_VAO, bike_VBO;
 int spider_n_triangles[N_SPIDER_FRAMES];
 int spider_vertex_offset[N_SPIDER_FRAMES];
 GLfloat *spider_vertices[N_SPIDER_FRAMES];
