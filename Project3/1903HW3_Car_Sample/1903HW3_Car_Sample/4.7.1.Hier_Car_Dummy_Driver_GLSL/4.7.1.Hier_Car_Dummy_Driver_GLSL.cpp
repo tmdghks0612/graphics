@@ -26,17 +26,23 @@ glm::mat4 ModelMatrix_CAR_BODY_to_DRIVER; // computed only once in initialize_ca
 bool teapot_flag = 0;
 bool box_flag = 0;
 bool crazycow_flag = 0;
+bool rotation_spider_flag = 0;
 
 #include "Camera.h"
 #include "Geometry.h"
 
+int cur_frame_spider = 0;
+
 float rotation_angle_car = 0.0f;
 float rotation_angle_teapot = 0.0f;
 float rotation_angle_box = 0.0f;
+float rotation_angle_spider = 0.0f;
 
 float crazycow_speed = 0.5f;
 float crazycow_height = 0.001f;
 float crazycow_coord = -40.0f;
+
+float scale_spider = 1.0f;
 
 float cow_gradation = 0.100f;
 
@@ -44,8 +50,95 @@ void draw_objects_in_world(void) {
   // Removed
 }
 
+
+
 #define rad 1.7f
 #define ww 1.0f
+#define N_SPIDER_FRAMES 16
+
+GLuint spider_VBO, spider_VAO;
+int spider_n_triangles[N_SPIDER_FRAMES];
+int spider_vertex_offset[N_SPIDER_FRAMES];
+GLfloat *spider_vertices[N_SPIDER_FRAMES];
+
+int read_geometry(GLfloat **object, int bytes_per_primitive, char *filename)
+{
+	int n_triangles;
+	FILE *fp;
+
+	fp = fopen(filename, "rb");
+	if (fp == NULL)
+	{
+		fprintf(stderr, "Cannot open the object file %s...", filename);
+		return -1;
+	}
+	fread(&n_triangles, sizeof(int), 1, fp);
+	*object = (float*)malloc(n_triangles*bytes_per_primitive);
+	if (*object == NULL)
+	{
+		fprintf(stderr, "Cannot allocate memory for the geometry file %s...", filename);
+		return -1;
+	}
+	fread(*object, bytes_per_primitive, n_triangles, fp);
+	fclose(fp);
+
+	return n_triangles;
+}
+
+void prepare_spider(void) {
+	int i, n_bytes_per_vertex, n_bytes_per_triangle, spider_n_total_triangles = 0;
+	char filename[512];
+
+	n_bytes_per_vertex = 8 * sizeof(float); // 3 for vertex, 3 for normal, and 2 for texcoord
+	n_bytes_per_triangle = 3 * n_bytes_per_vertex;
+
+	for (i = 0; i < N_SPIDER_FRAMES; i++) {
+		sprintf(filename, "Data/spider_vnt_%d%d.geom", i / 10, i % 10);
+		spider_n_triangles[i] = read_geometry(&spider_vertices[i], n_bytes_per_triangle, filename);
+		// Assume all geometry files are effective.
+		spider_n_total_triangles += spider_n_triangles[i];
+
+		if (i == 0)
+			spider_vertex_offset[i] = 0;
+		else
+			spider_vertex_offset[i] = spider_vertex_offset[i - 1] + 3 * spider_n_triangles[i - 1];
+	}
+
+	// Initialize vertex buffer object.
+	glGenBuffers(1, &spider_VBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, spider_VBO);
+	glBufferData(GL_ARRAY_BUFFER, spider_n_total_triangles*n_bytes_per_triangle, NULL, GL_STATIC_DRAW);
+
+	for (i = 0; i < N_SPIDER_FRAMES; i++)
+		glBufferSubData(GL_ARRAY_BUFFER, spider_vertex_offset[i] * n_bytes_per_vertex,
+			spider_n_triangles[i] * n_bytes_per_triangle, spider_vertices[i]);
+
+	// As the geometry data exists now in graphics memory, ...
+	for (i = 0; i < N_SPIDER_FRAMES; i++)
+		free(spider_vertices[i]);
+
+	// Initialize vertex array object.
+	glGenVertexArrays(1, &spider_VAO);
+	glBindVertexArray(spider_VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, spider_VBO);
+	glVertexAttribPointer(LOC_VERTEX, 3, GL_FLOAT, GL_FALSE, n_bytes_per_vertex, BUFFER_OFFSET(0));
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
+void draw_spider(void) {
+	glFrontFace(GL_CCW);
+
+	glUniform3f(loc_primitive_color, 1.0f, 1.0f, 0.0f); // Tiger wireframe color = yellow
+	glBindVertexArray(spider_VAO);
+	glDrawArrays(GL_TRIANGLES, spider_vertex_offset[cur_frame_spider], 3 * spider_n_triangles[cur_frame_spider]);
+	glBindVertexArray(0);
+}
+
 void draw_wheel_and_nut() {
 	// angle is used in Hierarchical_Car_Correct later
 	int i;
@@ -184,6 +277,29 @@ void pendulum_box()
 	rotation_angle_box = rotation_angle_box + 0.15;
 }
 
+void rotate_spider()
+{
+	if (rotation_angle_spider > 180.0f*TO_RADIAN)
+	{
+		rotation_spider_flag = 0;
+		scale_spider = -1;
+	}
+	else if(rotation_angle_spider < 0.0f)
+	{
+		rotation_spider_flag = 1;
+		scale_spider = 1;
+	}
+	if (rotation_spider_flag)
+	{
+		rotation_angle_spider = rotation_angle_spider + 0.01f;
+	}
+	else
+	{
+		rotation_angle_spider = rotation_angle_spider - 0.01f;
+	}
+	
+}
+
 void jump_crazycow()
 {
 	if (crazycow_height < 0.0f)
@@ -243,8 +359,21 @@ int flag_draw_world_objects = 1;
 void display(void) {
 	glm::mat4 ModelMatrix_big_cow, ModelMatrix_small_cow, ModelMatrix_crazycow;
 	glm::mat4 ModelMatrix_big_box, ModelMatrix_small_box;
+	glm::mat4 ModelMatrix_spider;
 	int i = 0;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//draw_spider
+
+	rotate_spider();
+
+	ModelMatrix_spider = glm::rotate(glm::mat4(1.0f), rotation_angle_spider, glm::vec3(0.0f, 0.0f, 1.0f));
+	ModelMatrix_spider = glm::translate(ModelMatrix_spider,glm::vec3(20.0f,0.0f,10.0f));
+	ModelMatrix_spider = glm::scale(ModelMatrix_spider, glm::vec3(2.5f, scale_spider * 2.5f, 2.5f));
+	ModelMatrix_spider = glm::rotate(ModelMatrix_spider, -90.0f*TO_RADIAN, glm::vec3(1.0f, 0.0f, 0.0f));
+	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_spider;
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	draw_spider();
 
 	/*
 	ModelMatrix_CAR_BODY = glm::rotate(glm::mat4(1.0f), -rotation_angle_car, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -401,6 +530,7 @@ void reshape(int width, int height) {
 
 void timer_scene(int timestamp_scene) {
 	rotation_angle_car = (timestamp_scene % 360)*TO_RADIAN;
+	cur_frame_spider = timestamp_scene % N_SPIDER_FRAMES;
 	glutPostRedisplay();
 	glutTimerFunc(10, timer_scene, (timestamp_scene + 1) % INT_MAX);
 }
@@ -416,6 +546,8 @@ void cleanup(void) {
 	free_geom_obj(GEOM_OBJ_ID_COW);
 	free_geom_obj(GEOM_OBJ_ID_TEAPOT);
 	free_geom_obj(GEOM_OBJ_ID_BOX);
+	glDeleteVertexArrays(1, &spider_VAO);
+	glDeleteBuffers(1, &spider_VBO);
 }
 /*********************************  END: callbacks *********************************/
 
@@ -469,6 +601,7 @@ void prepare_scene(void) {
 	prepare_geom_obj(GEOM_OBJ_ID_COW, "Data/cow_triangles_v.txt", GEOM_OBJ_TYPE_V);
 	prepare_geom_obj(GEOM_OBJ_ID_TEAPOT, "Data/teapot_triangles_v.txt", GEOM_OBJ_TYPE_V);
 	prepare_geom_obj(GEOM_OBJ_ID_BOX, "Data/box_triangles_v.txt", GEOM_OBJ_TYPE_V);
+	prepare_spider();
 }
 
 void initialize_renderer(void) {

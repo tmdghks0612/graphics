@@ -1,0 +1,10 @@
+﻿  Tiger_Texture_PS_GLSL.cpp
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(691): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(765): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(839): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(896): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(970): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(1044): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(1118): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+c:\users\grklimt5\desktop\4.0.1.3d_objects_anim_19\tiger_texture_ps_glsl\tiger_texture_ps_glsl.cpp(1192): warning C4101: 'i' :참조되지 않은 지역 변수입니다.
+  Tiger_Texture_PS_GLSL.vcxproj -> C:\Users\grklimt5\Desktop\4.0.1.3D_Objects_Anim_19\Debug\Tiger_Texture_PS_GLSL.exe
