@@ -4,6 +4,11 @@
 #define LOC_VERTEX 0
 #define LOC_NORMAL 1
 #define LOC_TEXCOORD 2
+#define WEB_SIZE 7.5f
+#define WEB_RATIO 1.05f
+#define WEB_DEPTH 50
+#define WEB_CYCLE 13
+#define WEB_START -20.0f
 
 GLuint axes_VBO, axes_VAO;
 GLfloat axes_vertices[6][3] = {
@@ -11,6 +16,92 @@ GLfloat axes_vertices[6][3] = {
 	{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }
 };
 GLfloat axes_color[3][3] = { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
+
+/*
+GLfloat web_vertices[] =
+{
+	WEB_SIZE, 0, WEB_SIZE,
+	0,0,0,
+	WEB_SIZE*(GLfloat)cos(30),WEB_SIZE*(GLfloat)sin(30),WEB_SIZE
+};
+*/
+GLuint web_VBO, web_VAO;
+GLfloat *web_vertices;
+int web_n_vertices;
+
+int read_web_file(GLfloat **object, char *filename) {
+	int i, j, n_vertices;
+	float *flt_ptr;
+	float x, y, z;
+	float x_screw = 1.0f;
+	float web_scale = 1.0f;
+	FILE *fp;
+
+	fprintf(stdout, "Reading path from the path file %s...\n", filename);
+	fp = fopen(filename, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Cannot open the path file %s ...", filename);
+		return -1;
+	}
+
+	fscanf(fp, "%d", &n_vertices);
+	*object = (float *)malloc(n_vertices * 3 * sizeof(float) * WEB_DEPTH);
+	if (*object == NULL) {
+		fprintf(stderr, "Cannot allocate memory for the path file %s ...", filename);
+		return -1;
+	}
+
+	flt_ptr = *object;
+	for (i = 0; i < n_vertices; i++) {
+		fscanf(fp, "%f %f %f", &x, &y, &z);
+		/*for (j = 0; j < WEB_DEPTH + 1; ++j)
+		{
+			*(flt_ptr+j*3*n_vertices) = x;
+			*(flt_ptr+j*3*n_vertices + 1) = y;
+			*(flt_ptr+j*3*n_vertices + 2) = z;
+		}*/
+		web_scale = 1.0f;
+		x += WEB_START;
+		for (j = 0; j < WEB_DEPTH; ++j)
+		{
+			*(flt_ptr + j*n_vertices * 3) = x*web_scale+j*x_screw ;
+			*(flt_ptr + j*n_vertices * 3 + 1) = y*web_scale;
+			*(flt_ptr + j*n_vertices * 3 + 2) = z*web_scale;
+			web_scale = web_scale * WEB_RATIO;
+		}
+
+		flt_ptr += 3;
+	}
+	fclose(fp);
+
+	fprintf(stdout, "Read %d vertices successfully.\n\n", n_vertices);
+
+	return WEB_DEPTH*n_vertices;
+}
+
+void prepare_web(void) { // Draw path.
+	//	return;
+	web_n_vertices = read_web_file(&web_vertices, "Data/web.txt");
+	printf("%d %f\n", web_n_vertices, web_vertices[(web_n_vertices - 1)]);
+	// Initialize vertex array object.
+	glGenVertexArrays(1, &web_VAO);
+	glBindVertexArray(web_VAO);
+	glGenBuffers(1, &web_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, web_VBO);
+	glBufferData(GL_ARRAY_BUFFER, web_n_vertices * 3 * sizeof(float), web_vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(LOC_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
+void draw_web()
+{
+	glBindVertexArray(web_VAO);
+	glUniform3f(loc_primitive_color, 0.450f, 0.150f, 0.900f); // color name: Yellow
+	glDrawArrays(GL_LINE_STRIP, 0, web_n_vertices);
+}
 
 void prepare_axes(void) { // Draw coordinate axes.
 	// Initialize vertex buffer object.
@@ -30,6 +121,8 @@ void prepare_axes(void) { // Draw coordinate axes.
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
+
+
 
 void draw_axes(void) {
 	glBindVertexArray(axes_VAO);
