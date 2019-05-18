@@ -19,33 +19,31 @@ void set_ViewMatrix_for_world_viewer(void) {
 }
 
 void set_ViewMatrix_for_driver(void) {
-	glm::mat4 Matrix_CAMERA_driver_inverse;
-
+	glm::mat4 Matrix_CAMERA_driver_inverse, Matrix_CAMERA_rotation;
+	
+	Matrix_CAMERA_rotation = glm::mat4(camera_wv.uaxis.x, camera_wv.vaxis.x, camera_wv.naxis.x, 0.0f,
+		camera_wv.uaxis.y, camera_wv.vaxis.y, camera_wv.naxis.y, 0.0f,
+		camera_wv.uaxis.z, camera_wv.vaxis.z, camera_wv.naxis.z, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+	
 	Matrix_CAMERA_driver_inverse = ModelMatrix_CAR_BODY * ModelMatrix_CAR_BODY_to_DRIVER;
 
 	ViewMatrix = glm::affineInverse(Matrix_CAMERA_driver_inverse);
+	ViewMatrix = Matrix_CAMERA_rotation * ViewMatrix;
+	
+	/*ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+	ViewProjectionMatrix = glm::translate(ViewProjectionMatrix, -camera_wv.pos);*/
+
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+
+	glutPostRedisplay();
 }
 
-/*
-void set_ViewMatrix_for_driver2(void) { // This version does not use the glm::affineInverse(*) function.
-	glm::mat4 Matrix_CAMERA;
-
-	Matrix_CAMERA = glm::rotate(glm::mat4(1.0f), -rotation_angle_car, glm::vec3(0.0f, 1.0f, 0.0f));
-	Matrix_CAMERA = glm::translate(Matrix_CAMERA, glm::vec3(20.0f, 4.89f, 0.0f));
-	Matrix_CAMERA = glm::rotate(Matrix_CAMERA, 90.0f*TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
-	Matrix_CAMERA = glm::translate(Matrix_CAMERA, glm::vec3(-3.0f, 0.5f, 2.5f));
-	Matrix_CAMERA = glm::rotate(Matrix_CAMERA, TO_RADIAN*90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-	ViewMatrix = glm::affineInverse(Matrix_CAMERA);
-	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
-}
-*/
 
 void initialize_camera(void) {
 	camera_type = CAMERA_WORLD_VIEWER;
 
-	ViewMatrix = glm::lookAt(glm::vec3(0.0f, 10.0f, 75.0f), glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ViewMatrix = glm::lookAt(glm::vec3(0.0f, 10.0f, 75.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	camera_wv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
 	camera_wv.vaxis = glm::vec3(ViewMatrix[0].y, ViewMatrix[1].y, ViewMatrix[2].y);

@@ -27,12 +27,15 @@ bool teapot_flag = 0;
 bool box_flag = 0;
 bool crazycow_flag = 0;
 bool rotation_spider_flag = 0;
+bool zoom_flag = 0;
 
 #include "Camera.h"
 #include "Geometry.h"
 
 int cur_frame_spider = 0;
 int cur_frame_tiger = 0;
+int cur_cam_pos = 0;
+
 
 float rotation_angle_car = 0.0f;
 float rotation_angle_teapot = 0.0f;
@@ -56,6 +59,9 @@ void draw_objects_in_world(void) {
 #define rad 1.7f
 #define ww 1.0f
 #define N_SPIDER_FRAMES 16
+#define CAM_ROTATE 30.0f
+#define CAM_DISTANCE 75.0f
+
 
 GLuint spider_VBO, spider_VAO;
 int spider_n_triangles[N_SPIDER_FRAMES];
@@ -197,7 +203,7 @@ void draw_tiger(void) {
 
 	glUniform3f(loc_primitive_color, 0.0f, 1.0f, 0.75f); // Tiger wireframe color = yellowgreen
 	glBindVertexArray(tiger_VAO);
-	glDrawArrays(GL_TRIANGLES, tiger_vertex_offset[cur_frame_tiger+1], 3 * tiger_n_triangles[cur_frame_tiger]);
+	glDrawArrays(GL_TRIANGLES, tiger_vertex_offset[cur_frame_tiger], 3 * tiger_n_triangles[cur_frame_tiger]);
 	glBindVertexArray(0);
 }
 
@@ -533,6 +539,46 @@ void display(void) {
 	glutSwapBuffers();
 }
 
+void arrow_inputhandler(int key, int x, int y)
+{
+	if (key == GLUT_KEY_LEFT)
+	{
+		cur_cam_pos += 1;
+		cur_cam_pos %= 12;
+		ViewMatrix = glm::lookAt(glm::vec3(CAM_DISTANCE*sin(TO_RADIAN*(cur_cam_pos * CAM_ROTATE)), 10.0f, CAM_DISTANCE*cos(TO_RADIAN*(cur_cam_pos * CAM_ROTATE))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		camera_wv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
+		camera_wv.vaxis = glm::vec3(ViewMatrix[0].y, ViewMatrix[1].y, ViewMatrix[2].y);
+		camera_wv.naxis = glm::vec3(ViewMatrix[0].z, ViewMatrix[1].z, ViewMatrix[2].z);
+		camera_wv.pos = -(ViewMatrix[3].x*camera_wv.uaxis + ViewMatrix[3].y*camera_wv.vaxis + ViewMatrix[3].z*camera_wv.naxis);
+
+		camera_wv.move = 0;
+		camera_wv.fovy = 30.0f, camera_wv.aspect_ratio = 1.0f; camera_wv.near_c = 5.0f; camera_wv.far_c = 10000.0f;
+
+		ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+		glutPostRedisplay();
+	}
+	else if (key == GLUT_KEY_RIGHT)
+	{
+		cur_cam_pos += 11;
+		cur_cam_pos %= 12;
+		ViewMatrix = glm::lookAt(glm::vec3(CAM_DISTANCE*sin(TO_RADIAN*(cur_cam_pos * CAM_ROTATE)), 10.0f, CAM_DISTANCE*cos(TO_RADIAN*(cur_cam_pos * CAM_ROTATE))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		camera_wv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
+		camera_wv.vaxis = glm::vec3(ViewMatrix[0].y, ViewMatrix[1].y, ViewMatrix[2].y);
+		camera_wv.naxis = glm::vec3(ViewMatrix[0].z, ViewMatrix[1].z, ViewMatrix[2].z);
+		camera_wv.pos = -(ViewMatrix[3].x*camera_wv.uaxis + ViewMatrix[3].y*camera_wv.vaxis + ViewMatrix[3].z*camera_wv.naxis);
+
+		camera_wv.move = 0;
+		camera_wv.fovy = 30.0f, camera_wv.aspect_ratio = 1.0f; camera_wv.near_c = 5.0f; camera_wv.far_c = 10000.0f;
+
+		ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+		glutPostRedisplay();
+	}
+	else if (key == GLUT_KEY_DOWN)
+		printf("Down key is pressed\n");
+	else if (key == GLUT_KEY_UP)
+		printf("Up key is pressed\n");
+}
+
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case 'f':
@@ -544,10 +590,12 @@ void keyboard(unsigned char key, int x, int y) {
 		glutPostRedisplay();
 		break;
 	case 'd':
+		ViewMatrix = glm::mat4(1.0f);
 		camera_type = CAMERA_DRIVER;
 		glutPostRedisplay();
 		break;
 	case 'w':
+		ViewMatrix = glm::mat4(1.0f);
 		camera_type = CAMERA_WORLD_VIEWER;
 		set_ViewMatrix_for_world_viewer();
 		ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
@@ -578,14 +626,23 @@ void keyboard(unsigned char key, int x, int y) {
 int prevx, prevy;
 
 void motion(int x, int y) {
-	if (!camera_wv.move | (camera_type != CAMERA_WORLD_VIEWER)) 
+	bool shift_press = glutGetModifiers();
+	if (!camera_wv.move ) 
 		return;
 
-	renew_cam_position(prevy - y);
-	renew_cam_orientation_rotation_around_v_axis(prevx - x);
+	if (shift_press == GLUT_ACTIVE_SHIFT)
+	{
+		renew_cam_position(prevx - x);
+	}
+	/*else
+	{
+		renew_cam_position(prevy - y);
+		renew_cam_orientation_rotation_around_v_axis(prevx - x);
+	}*/
 
 	prevx = x; prevy = y;
-
+	if (camera_type != CAMERA_WORLD_VIEWER)
+		return;
 	set_ViewMatrix_for_world_viewer();
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
@@ -596,7 +653,8 @@ void mouse(int button, int state, int x, int y) {
 	if ((button == GLUT_LEFT_BUTTON)) {
 		if (state == GLUT_DOWN) {
 			camera_wv.move = 1; 
-			prevx = x; prevy = y;
+			prevx = x;
+			prevy = y;
 		}
 		else if (state == GLUT_UP) camera_wv.move = 0;
 	}
@@ -647,6 +705,7 @@ void register_callbacks(void) {
 	glutReshapeFunc(reshape);
 	glutTimerFunc(100, timer_scene, 0);
 	glutCloseFunc(cleanup);
+	glutSpecialFunc(arrow_inputhandler);
 }
 
 void prepare_shader_program(void) {
