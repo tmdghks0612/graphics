@@ -7,7 +7,7 @@ typedef struct _Camera {
 	int move;
 } Camera;
 
-Camera camera_wv;
+Camera camera_wv,camera_dv;
 enum _CameraType { CAMERA_WORLD_VIEWER, CAMERA_DRIVER } camera_type;
 
 void set_ViewMatrix_for_world_viewer(void) {
@@ -16,27 +16,24 @@ void set_ViewMatrix_for_world_viewer(void) {
 		camera_wv.uaxis.z, camera_wv.vaxis.z, camera_wv.naxis.z, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f);
 	ViewMatrix = glm::translate(ViewMatrix, -camera_wv.pos);
+	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 }
 
 void set_ViewMatrix_for_driver(void) {
 	glm::mat4 Matrix_CAMERA_driver_inverse, Matrix_CAMERA_rotation;
 	
-	Matrix_CAMERA_rotation = glm::mat4(camera_wv.uaxis.x, camera_wv.vaxis.x, camera_wv.naxis.x, 0.0f,
-		camera_wv.uaxis.y, camera_wv.vaxis.y, camera_wv.naxis.y, 0.0f,
-		camera_wv.uaxis.z, camera_wv.vaxis.z, camera_wv.naxis.z, 0.0f,
+	Matrix_CAMERA_rotation = glm::mat4(camera_dv.uaxis.x, camera_dv.vaxis.x, camera_dv.naxis.x, 0.0f,
+		camera_dv.uaxis.y, camera_dv.vaxis.y, camera_dv.naxis.y, 0.0f,
+		camera_dv.uaxis.z, camera_dv.vaxis.z, camera_dv.naxis.z, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f);
 	
 	Matrix_CAMERA_driver_inverse = ModelMatrix_CAR_BODY * ModelMatrix_CAR_BODY_to_DRIVER;
 
 	ViewMatrix = glm::affineInverse(Matrix_CAMERA_driver_inverse);
 	ViewMatrix = Matrix_CAMERA_rotation * ViewMatrix;
-	
-	/*ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
-	ViewProjectionMatrix = glm::translate(ViewProjectionMatrix, -camera_wv.pos);*/
 
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
-	glutPostRedisplay();
 }
 
 
@@ -52,7 +49,15 @@ void initialize_camera(void) {
 
 	camera_wv.move = 0;
 	camera_wv.fovy = 30.0f, camera_wv.aspect_ratio = 1.0f; camera_wv.near_c = 5.0f; camera_wv.far_c = 10000.0f;
+	//
+	camera_dv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
+	camera_dv.vaxis = glm::vec3(ViewMatrix[0].y, ViewMatrix[1].y, ViewMatrix[2].y);
+	camera_dv.naxis = glm::vec3(ViewMatrix[0].z, ViewMatrix[1].z, ViewMatrix[2].z);
+	camera_dv.pos = -(ViewMatrix[3].x*camera_dv.uaxis + ViewMatrix[3].y*camera_dv.vaxis + ViewMatrix[3].z*camera_dv.naxis);
 
+	camera_dv.move = 0;
+	camera_dv.fovy = 30.0f, camera_dv.aspect_ratio = 1.0f; camera_dv.near_c = 5.0f; camera_dv.far_c = 10000.0f;
+	//
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
 	// the transformation that moves the driver's camera frame from car body's MC to driver seat

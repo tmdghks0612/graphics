@@ -29,6 +29,9 @@ bool crazycow_flag = 0;
 bool rotation_spider_flag = 0;
 bool zoom_flag = 0;
 
+int window_width = 1200;
+int window_height = 800;
+
 #include "Camera.h"
 #include "Geometry.h"
 
@@ -50,9 +53,7 @@ float scale_spider = 1.0f;
 
 float cow_gradation = 0.100f;
 
-void draw_objects_in_world(void) {
-  // Removed
-}
+
 
 
 
@@ -424,21 +425,19 @@ void draw_car_dummy(void) {
 /*********************************  START: callbacks *********************************/
 int flag_draw_world_objects = 1;
 
-void display(void) {
+void draw_objects_in_world(void) {
 	glm::mat4 ModelMatrix_big_cow, ModelMatrix_small_cow, ModelMatrix_crazycow;
 	glm::mat4 ModelMatrix_big_box, ModelMatrix_small_box;
 	glm::mat4 ModelMatrix_spider, ModelMatrix_web;
 	GLfloat web_scale = 1;
 	int i = 0;
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-
 	rotate_spider();
 
 	ModelMatrix_spider = glm::translate(glm::mat4(1.0f), glm::vec3(WEB_START*1.55f, 0.0f, 0.0f));
 	ModelMatrix_spider = glm::rotate(ModelMatrix_spider, 90.0f*TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrix_spider = glm::rotate(ModelMatrix_spider, rotation_angle_spider, glm::vec3(0.0f, 0.0f, 1.0f));
-	ModelMatrix_spider = glm::translate(ModelMatrix_spider,glm::vec3(20.0f,0.0f,10.0f));
+	ModelMatrix_spider = glm::translate(ModelMatrix_spider, glm::vec3(20.0f, 0.0f, 10.0f));
 	ModelMatrix_spider = glm::scale(ModelMatrix_spider, glm::vec3(2.5f, scale_spider * 2.5f, 2.5f));
 	ModelMatrix_spider = glm::rotate(ModelMatrix_spider, -90.0f*TO_RADIAN, glm::vec3(1.0f, 0.0f, 0.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_spider;
@@ -463,7 +462,7 @@ void display(void) {
 	for (i = 1; i < 4; ++i)
 	{
 		ModelMatrix_big_cow = glm::rotate(glm::mat4(1.0f), -45.0f*TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
-		ModelMatrix_big_cow = glm::translate(ModelMatrix_big_cow, glm::vec3(-20.0f-(i*10.0f), 1.0f, 10.0f));
+		ModelMatrix_big_cow = glm::translate(ModelMatrix_big_cow, glm::vec3(-20.0f - (i*10.0f), 1.0f, 10.0f));
 		ModelMatrix_big_cow = glm::scale(ModelMatrix_big_cow, glm::vec3(2.0f*i, 2.0f*i, 2.0f*i));
 		ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_big_cow;
 		glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
@@ -487,7 +486,7 @@ void display(void) {
 	{
 		rotate_teapot();
 	}
-	ModelMatrix_TEAPOT = glm::rotate(glm::mat4(1.0f), -rotation_angle_teapot*TO_RADIAN, glm::vec3(0.0f, 1.0f, 1.0f));
+	ModelMatrix_TEAPOT = glm::rotate(glm::mat4(1.0f), -rotation_angle_teapot * TO_RADIAN, glm::vec3(0.0f, 1.0f, 1.0f));
 	ModelMatrix_TEAPOT = glm::translate(ModelMatrix_TEAPOT, glm::vec3(-20.0f, 1.0f, 10.0f));
 	ModelMatrix_TEAPOT = glm::scale(ModelMatrix_TEAPOT, glm::vec3(3.0f, 5.0f, 3.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_TEAPOT;
@@ -499,14 +498,14 @@ void display(void) {
 		pendulum_box();
 	}
 	ModelMatrix_BOX = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	ModelMatrix_BOX = glm::translate(ModelMatrix_BOX, glm::vec3(10*sin(rotation_angle_box), 1.0f, -20.0f));
+	ModelMatrix_BOX = glm::translate(ModelMatrix_BOX, glm::vec3(10 * sin(rotation_angle_box), 1.0f, -20.0f));
 	ModelMatrix_BOX = glm::scale(ModelMatrix_BOX, glm::vec3(3.0f, 3.0f, 3.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_BOX;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_box();
 	//draw extra objects
-	
-	if (camera_type == CAMERA_DRIVER) set_ViewMatrix_for_driver();
+
+	//if (camera_type == CAMERA_DRIVER) set_ViewMatrix_for_driver();
 
 	ModelMatrix_CAR_BODY = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_CAR_BODY;
@@ -522,20 +521,35 @@ void display(void) {
 	ModelViewProjectionMatrix = ViewProjectionMatrix;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_path();
-	
+
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_web;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_web();
-	
+
 	ModelMatrix_web = glm::scale(glm::mat4(1.0f), glm::vec3(-1.0f, 1.0f, 1.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_web;
 	glUniformMatrix4fv(loc_ModelViewProjectionMatrix, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
 	draw_web();
+}
+
+void display(void) {
 	
-
-	if (flag_draw_world_objects)
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (camera_type == CAMERA_WORLD_VIEWER)
+	{
+		glViewport(0, 0, window_width, window_height);
 		draw_objects_in_world();
-
+	}
+	else
+	{
+		glViewport(0, 0, window_width / 4 * 3, window_height);
+		set_ViewMatrix_for_world_viewer();
+		draw_objects_in_world();
+		glViewport(window_width/4*3+1,0, window_width/4, window_height/4);
+		set_ViewMatrix_for_driver();
+		draw_objects_in_world();
+	}
+	glFlush();
 	glutSwapBuffers();
 }
 
@@ -663,7 +677,11 @@ void mouse(int button, int state, int x, int y) {
 void reshape(int width, int height) {
 	glViewport(0, 0, width, height);
 	
+	window_width = width;
+	window_height = height;
+
 	camera_wv.aspect_ratio = (float)width / height;
+	camera_dv.aspect_ratio = (float)width / height;
 
 	ProjectionMatrix = glm::perspective(TO_RADIAN*camera_wv.fovy, camera_wv.aspect_ratio, camera_wv.near_c, camera_wv.far_c);
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
