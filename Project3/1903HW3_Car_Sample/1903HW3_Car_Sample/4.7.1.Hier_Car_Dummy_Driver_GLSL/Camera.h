@@ -32,28 +32,14 @@ void set_ViewMatrix_for_driver(void) {
 	Matrix_CAMERA_driver_inverse = ModelMatrix_CAR_BODY * ModelMatrix_CAR_BODY_to_DRIVER;
 
 	ViewMatrix = glm::affineInverse(Matrix_CAMERA_driver_inverse);
+	ViewMatrix = glm::translate(ViewMatrix, -camera_wv.pos);
 	ViewMatrix = Matrix_CAMERA_rotation * ViewMatrix;
-
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
 }
 
 void set_ViewMatrix_for_tiger(void) {
 	glm::mat4 Matrix_TIGER_inverse, Matrix_CAMERA_rotation;
-	/*
-	Matrix_CAMERA_rotation = glm::mat4(camera_tv.uaxis.x, camera_tv.vaxis.x, camera_tv.naxis.x, 0.0f,
-		camera_tv.uaxis.y, camera_tv.vaxis.y, camera_tv.naxis.y, 0.0f,
-		camera_tv.uaxis.z, camera_tv.vaxis.z, camera_tv.naxis.z, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f);
-
-	Matrix_TIGER_inverse = ModelMatrix_TIGER;
-
-	ViewMatrix = glm::affineInverse(Matrix_TIGER_inverse);
-	ViewMatrix = Matrix_CAMERA_rotation * ViewMatrix;
-
-	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
-	*/
-	//glm::mat4 Matrix_CAMERA_driver_inverse, Matrix_CAMERA_rotation;
 
 	Matrix_CAMERA_rotation = glm::mat4(camera_tv.uaxis.x, camera_tv.vaxis.x, camera_tv.naxis.x, 0.0f,
 		camera_tv.uaxis.y, camera_tv.vaxis.y, camera_tv.naxis.y, 0.0f,
@@ -63,7 +49,10 @@ void set_ViewMatrix_for_tiger(void) {
 	Matrix_TIGER_inverse = ModelMatrix_TIGER * ModelMatrix_TIGER_to_EYE;
 
 	ViewMatrix = glm::affineInverse(Matrix_TIGER_inverse);
+	
 	ViewMatrix = Matrix_CAMERA_rotation * ViewMatrix;
+
+	ViewMatrix = glm::translate(ViewMatrix, camera_wv.pos);
 
 	ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
@@ -108,7 +97,7 @@ void initialize_camera(void) {
 
 	ModelMatrix_TIGER_to_EYE = glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.5f, 0.0f));
 	ModelMatrix_TIGER_to_EYE = glm::rotate(ModelMatrix_TIGER_to_EYE,
-		TO_RADIAN*90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		TO_RADIAN*110.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelMatrix_TIGER_to_EYE = glm::rotate(ModelMatrix_TIGER_to_EYE,
 		TO_RADIAN*90.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 }

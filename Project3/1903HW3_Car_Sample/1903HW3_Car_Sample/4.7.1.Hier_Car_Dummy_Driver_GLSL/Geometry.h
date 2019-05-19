@@ -54,12 +54,6 @@ int read_web_file(GLfloat **object, char *filename) {
 	flt_ptr = *object;
 	for (i = 0; i < n_vertices; i++) {
 		fscanf(fp, "%f %f %f", &x, &y, &z);
-		/*for (j = 0; j < WEB_DEPTH + 1; ++j)
-		{
-			*(flt_ptr+j*3*n_vertices) = x;
-			*(flt_ptr+j*3*n_vertices + 1) = y;
-			*(flt_ptr+j*3*n_vertices + 2) = z;
-		}*/
 		web_scale = 1.0f;
 		x += WEB_START;
 		for (j = 0; j < WEB_DEPTH; ++j)

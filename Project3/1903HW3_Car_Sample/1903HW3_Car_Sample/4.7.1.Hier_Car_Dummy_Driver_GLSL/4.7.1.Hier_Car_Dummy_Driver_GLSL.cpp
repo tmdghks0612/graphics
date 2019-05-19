@@ -42,12 +42,13 @@ int window_height = 800;
 int cur_frame_spider = 0;
 int cur_frame_tiger = 0;
 int cur_cam_pos = 0;
+int cur_cam_height = 0;
 
 float car_x=0;
 float car_y=0;
 float car_z=0;
 float car_rotation = 0;
-float car_twist = 45.0f;
+float car_twist = 0.0f;
 
 float rotation_angle_car = 0.0f;
 float rotation_angle_teapot = 0.0f;
@@ -61,10 +62,6 @@ float crazycow_coord = -40.0f;
 float scale_spider = 1.0f;
 
 float cow_gradation = 0.100f;
-
-
-
-
 
 
 
@@ -423,7 +420,6 @@ void move_car()
 		car_twist -= 0.4f;
 		car_z = car_z + sin(car_twist*TO_RADIAN);
 	}
-	//to manipulate in the future
 }
 
 void draw_car_dummy(void) {
@@ -559,7 +555,7 @@ void draw_objects_in_world(void) {
 
 	//if (camera_type == CAMERA_DRIVER) set_ViewMatrix_for_driver();
 
-	ModelMatrix_CAR_BODY = glm::translate(glm::mat4(1.0f), glm::vec3(car_x, car_y, car_z));
+	ModelMatrix_CAR_BODY = glm::translate(glm::mat4(1.0f), glm::vec3(car_x, car_y, car_z-20.0f));
 	ModelMatrix_CAR_BODY = glm::rotate(ModelMatrix_CAR_BODY, -car_rotation*TO_RADIAN, glm::vec3(0.0f, 0.0f, 1.0f));
 	ModelMatrix_CAR_BODY = glm::rotate(ModelMatrix_CAR_BODY, car_twist * TO_RADIAN, glm::vec3(0.0f, 1.0f, 0.0f));
 	ModelViewProjectionMatrix = ViewProjectionMatrix * ModelMatrix_CAR_BODY;
@@ -589,28 +585,43 @@ void draw_objects_in_world(void) {
 void display(void) {
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if ((camera_driver_flag == 0) && (camera_tiger_flag == 0))
+	if (camera_type == CAMERA_DRIVER)
 	{
 		glViewport(0, 0, window_width, window_height);
-		set_ViewMatrix_for_world_viewer();
+		set_ViewMatrix_for_driver();
+		draw_objects_in_world();
+	}
+	else if (camera_type == CAMERA_TIGER)
+	{
+		glViewport(0, 0, window_width, window_height);
+		set_ViewMatrix_for_tiger();
 		draw_objects_in_world();
 	}
 	else
 	{
-		glViewport(0, 0, window_width / 4 * 3, window_height);
-		set_ViewMatrix_for_world_viewer();
-		draw_objects_in_world();
-		if (camera_driver_flag)
+		if ((camera_driver_flag == 0) && (camera_tiger_flag == 0))
 		{
-			glViewport(window_width / 4 * 3 + 1, 0, window_width / 4, window_height / 4);
-			set_ViewMatrix_for_driver();
+			glViewport(0, 0, window_width, window_height);
+			set_ViewMatrix_for_world_viewer();
 			draw_objects_in_world();
 		}
-		if (camera_tiger_flag)
+		else
 		{
-			glViewport(window_width / 4 * 3 + 1, window_height/2 , window_width / 4, window_height / 4);
-			set_ViewMatrix_for_tiger();
+			glViewport(0, 0, window_width / 4 * 3, window_height);
+			set_ViewMatrix_for_world_viewer();
 			draw_objects_in_world();
+			if (camera_driver_flag)
+			{
+				glViewport(window_width / 4 * 3 + 1, 0, window_width / 4, window_height / 4);
+				set_ViewMatrix_for_driver();
+				draw_objects_in_world();
+			}
+			if (camera_tiger_flag)
+			{
+				glViewport(window_width / 4 * 3 + 1, window_height / 2, window_width / 4, window_height / 4);
+				set_ViewMatrix_for_tiger();
+				draw_objects_in_world();
+			}
 		}
 	}
 	glFlush();
@@ -621,7 +632,8 @@ void arrow_inputhandler(int key, int x, int y)
 {
 	if (key == GLUT_KEY_LEFT)
 	{
-		cur_cam_pos += 1;
+		cur_cam_height = 0;
+		cur_cam_pos += 11;
 		cur_cam_pos %= 12;
 		ViewMatrix = glm::lookAt(glm::vec3(CAM_DISTANCE*sin(TO_RADIAN*(cur_cam_pos * CAM_ROTATE)), 10.0f, CAM_DISTANCE*cos(TO_RADIAN*(cur_cam_pos * CAM_ROTATE))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		camera_wv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
@@ -637,7 +649,8 @@ void arrow_inputhandler(int key, int x, int y)
 	}
 	else if (key == GLUT_KEY_RIGHT)
 	{
-		cur_cam_pos += 11;
+		cur_cam_height = 0;
+		cur_cam_pos += 1;
 		cur_cam_pos %= 12;
 		ViewMatrix = glm::lookAt(glm::vec3(CAM_DISTANCE*sin(TO_RADIAN*(cur_cam_pos * CAM_ROTATE)), 10.0f, CAM_DISTANCE*cos(TO_RADIAN*(cur_cam_pos * CAM_ROTATE))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		camera_wv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
@@ -652,13 +665,78 @@ void arrow_inputhandler(int key, int x, int y)
 		glutPostRedisplay();
 	}
 	else if (key == GLUT_KEY_DOWN)
-		printf("Down key is pressed\n");
+	{
+		if (cur_cam_height == -1)
+		{
+			return;
+		}
+		cur_cam_height -= 1;
+		if (cur_cam_height == 0)
+		{
+			cur_cam_pos = 0;
+			ViewMatrix = glm::lookAt(glm::vec3(CAM_DISTANCE*sin(TO_RADIAN*(cur_cam_pos * CAM_ROTATE)), 10.0f, CAM_DISTANCE*cos(TO_RADIAN*(cur_cam_pos * CAM_ROTATE))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		else if(cur_cam_height == -1)
+		{
+			cur_cam_pos = 0;
+			ViewMatrix = glm::lookAt(glm::vec3(0.0f, -CAM_DISTANCE, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		}
+		
+		camera_wv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
+		camera_wv.vaxis = glm::vec3(ViewMatrix[0].y, ViewMatrix[1].y, ViewMatrix[2].y);
+		camera_wv.naxis = glm::vec3(ViewMatrix[0].z, ViewMatrix[1].z, ViewMatrix[2].z);
+		camera_wv.pos = -(ViewMatrix[3].x*camera_wv.uaxis + ViewMatrix[3].y*camera_wv.vaxis + ViewMatrix[3].z*camera_wv.naxis);
+
+		camera_wv.move = 0;
+		camera_wv.fovy = 30.0f, camera_wv.aspect_ratio = 1.0f; camera_wv.near_c = 5.0f; camera_wv.far_c = 10000.0f;
+
+		ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+		glutPostRedisplay();
+	}
 	else if (key == GLUT_KEY_UP)
-		printf("Up key is pressed\n");
+	{
+		if (cur_cam_height == 1)
+		{
+			return;
+		}
+		cur_cam_height += 1;
+		if (cur_cam_height == 0)
+		{
+			ViewMatrix = glm::lookAt(glm::vec3(CAM_DISTANCE*sin(TO_RADIAN*(cur_cam_pos * CAM_ROTATE)), 10.0f, CAM_DISTANCE*cos(TO_RADIAN*(cur_cam_pos * CAM_ROTATE))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		else if (cur_cam_height == 1)
+		{
+			cur_cam_pos = 0;
+			ViewMatrix = glm::lookAt(glm::vec3(0.0f, CAM_DISTANCE, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		}
+
+		camera_wv.uaxis = glm::vec3(ViewMatrix[0].x, ViewMatrix[1].x, ViewMatrix[2].x);
+		camera_wv.vaxis = glm::vec3(ViewMatrix[0].y, ViewMatrix[1].y, ViewMatrix[2].y);
+		camera_wv.naxis = glm::vec3(ViewMatrix[0].z, ViewMatrix[1].z, ViewMatrix[2].z);
+		camera_wv.pos = -(ViewMatrix[3].x*camera_wv.uaxis + ViewMatrix[3].y*camera_wv.vaxis + ViewMatrix[3].z*camera_wv.naxis);
+
+		camera_wv.move = 0;
+		camera_wv.fovy = 30.0f, camera_wv.aspect_ratio = 1.0f; camera_wv.near_c = 5.0f; camera_wv.far_c = 10000.0f;
+
+		ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+		glutPostRedisplay();
+	}
 }
 
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
+	case 'a':
+		camera_type = CAMERA_DRIVER;
+		camera_driver_flag = 0;
+		camera_tiger_flag = 0;
+		glutPostRedisplay();
+		break;
+	case 's':
+		camera_type = CAMERA_TIGER;
+		camera_driver_flag = 0;
+		camera_tiger_flag = 0;
+		glutPostRedisplay();
+		break;
 	case 'f':
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glutPostRedisplay();
@@ -669,7 +747,6 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'd':
 		ViewMatrix = glm::mat4(1.0f);
-		camera_type = CAMERA_DRIVER;
 		if (camera_driver_flag)
 		{
 			camera_driver_flag = 0;
@@ -683,7 +760,6 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case 't':
 		ViewMatrix = glm::mat4(1.0f);
-		camera_type = CAMERA_TIGER;
 		if (camera_tiger_flag)
 		{
 			camera_tiger_flag = 0;
